@@ -1,1 +1,525 @@
-# ReinoMilitar
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Fichas de Personagens</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2, h3 {
+            color: #e94560;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            background-color: #0f3460;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 30px;
+        }
+
+        .form-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #bae8e8;
+        }
+
+        .form-section input[type="text"],
+        .form-section input[type="number"],
+        .form-section textarea,
+        .form-section input[type="file"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #16213e;
+            border-radius: 5px;
+            background-color: #16213e;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+
+        .form-section textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .button {
+            background-color: #e94560;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            background-color: #d1304b;
+        }
+
+        .character-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .character-card {
+            background-color: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .character-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .character-card h3 {
+            color: #bae8e8;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .character-card p {
+            margin-bottom: 5px;
+            color: #a0a0a0;
+        }
+
+        .character-card .card-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .character-card .card-buttons .button {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            margin-top: 0;
+        }
+
+        .character-detail-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #0f3460;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            width: 90%;
+            max-width: 700px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-button {
+            color: #e94560;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #d1304b;
+            text-decoration: none;
+        }
+
+        .character-detail-content h2 {
+            text-align: center;
+            color: #e94560;
+            margin-bottom: 20px;
+        }
+
+        .character-detail-content .detail-group {
+            margin-bottom: 20px;
+            border: 1px dashed #16213e;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .character-detail-content .detail-group h3 {
+            color: #bae8e8;
+            margin-top: 0;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .character-detail-content p {
+            margin-bottom: 8px;
+            color: #d0d0d0;
+        }
+
+        .character-detail-content .detail-label {
+            font-weight: bold;
+            color: #bae8e8;
+            margin-right: 5px;
+        }
+
+        .character-image-container {
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        .character-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 2px solid #bae8e8;
+            max-height: 300px;
+            object-fit: contain;
+        }
+
+        .add-item-group {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #16213e;
+        }
+
+        .add-item-group h4 {
+            color: #bae8e8;
+            margin-bottom: 10px;
+        }
+
+        .add-item-group input[type="text"],
+        .add-item-group textarea {
+            width: calc(100% - 22px);
+            margin-bottom: 10px;
+        }
+
+        .add-item-group .button {
+            margin-top: 5px;
+        }
+
+        .item-list {
+            margin-top: 10px;
+            border: 1px solid #16213e;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .item-list div {
+            background-color: #0f3460;
+            padding: 8px;
+            border-bottom: 1px solid #16213e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-list div:last-child {
+            border-bottom: none;
+        }
+
+        .item-list .remove-button {
+            background-color: #e94560;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .item-list .remove-button:hover {
+            background-color: #d1304b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #editCharacterForm {
+            display: none;
+        }
+
+        #editCharacterForm .form-section label {
+            margin-top: 10px;
+        }
+
+        .import-export-section {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .import-export-section .button {
+            flex: 1;
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gerenciador de Fichas de Personagens</h1>
+
+    <div class="container">
+        <h2>Criar Nova Ficha de Personagem</h2>
+        <form id="characterForm" class="form-section">
+            <div style="background-color: #0f3460; padding: 20px; border-radius: 8px; border: 1px dashed #e94560;">
+                <h3 style="text-align: center; color: #bae8e8;">*🌒 `Ficha de Personagem` 🌘*</h3>
+                <p style="text-align: center; color: #a0a0a0; font-style: italic;">───┈┈ ⃟ ⃟⸙ིིུ⃔͜ ⃟ ⃟ ┈┈───</p>
+                <h3 style="text-align: center; color: #e94560;">☽☾ Beyond Revenge ☽☾</h3>
+                <h3 style="text-align: center; color: #bae8e8;">♛ ⃟ ⃟⸙ིིུ⃔͜ ⃟ ⃟ ♕</h3>
+                <p style="text-align: center; color: #a0a0a0; font-style: italic;">Quando se trata de segredos e poder, nunca se pode dizer ao certo de que lado cada um está.</p>
+                <p style="text-align: center; color: #a0a0a0; font-style: italic;">───┈┈ ⃟ ⃟⸙ིིུ⃔͜ ⃟ ⃟ ┈┈───</p>
+                <h3 style="text-align: center; color: #bae8e8;">⃟ ⃟⸙ *`FICHA DE CRIAÇÃO`* ⃟ ⃟⸙</h3>
+
+                <h3>*💠 `PLAYER` 💠*</h3>
+                <label for="playerName">Seu nome:</label>
+                <input type="text" id="playerName" placeholder="Nome do Player" required>
+
+                <label for="playerAge">Sua idade:</label>
+                <input type="number" id="playerAge" placeholder="Idade do Player" required>
+
+                <label for="playerTime">Horário disponível para jogar:</label>
+                <input type="text" id="playerTime" placeholder="Ex: Noite, Finais de semana" required>
+
+                <h3>*💠 `PERSONAGEM` 💠*</h3>
+                <label for="characterName">Nome:</label>
+                <input type="text" id="characterName" placeholder="Nome do Personagem" required>
+
+                <label for="characterAge">Idade:</label>
+                <input type="number" id="characterAge" placeholder="Idade do Personagem" required>
+
+                <label for="characterRace">Raça:</label>
+                <input type="text" id="characterRace" placeholder="Raça do Personagem" required>
+
+                <label for="characterAppearanceName">Nome da aparência:</label>
+                <input type="text" id="characterAppearanceName" placeholder="Ex: Goku, Levi Ackerman" required>
+
+                <label for="characterArtworkOrigin">Obra de onde a aparência foi tirada:</label>
+                <input type="text" id="characterArtworkOrigin" placeholder="Ex: Dragon Ball, Attack on Titan" required>
+
+                <label for="characterWeapon">Arma:</label>
+                <input type="text" id="characterWeapon" placeholder="Arma principal" required>
+
+                <label for="characterItem">Item Adicional:</label>
+                <input type="text" id="characterItem" placeholder="Item adicional (Ex: Amuleto, Poção)" required>
+
+                <label for="characterHistory">História:</label>
+                <textarea id="characterHistory" placeholder="Breve história do personagem" required></textarea>
+
+                <p style="text-align: center; color: #a0a0a0; font-style: italic;">───┈┈ ⃟ ⃟⸙ིིུ⃔͜ ⃟ ⃟ ┈┈───</p>
+                <label for="characterImage">Imagem da Aparência:</label>
+                <input type="file" id="characterImage" accept="image/*">
+                <p style="text-align: center; color: #a0a0a0; font-style: italic;">_*Observação:* É necessário enviar a imagem da aparência do seu personagem em conjunto com a ficha._</p>
+                <p style="text-align: center; color: #a0a0a0; font-style: italic;">───┈┈ ⃟ ⃟⸙ིིུ⃔͜ ⃟ ⃟ ┈┈───</p>
+            </div>
+            <button type="submit" class="button" style="width: 100%;">Criar Personagem</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Seus Personagens</h2>
+        <div id="characterList" class="character-list">
+            </div>
+    </div>
+
+    <div class="container import-export-section">
+        <h2>Gerenciamento de Dados</h2>
+        <button class="button" onclick="exportCharacters()">Baixar Todos os Personagens</button>
+        <label class="button" for="importFile" style="text-align: center; cursor: pointer; display: inline-block;">Importar Personagens</label>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importCharacters(event)">
+    </div>
+
+    <div id="characterDetailModal" class="character-detail-modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeDetailModal()">&times;</span>
+            <div id="characterDetailContent" class="character-detail-content">
+                </div>
+            <form id="editCharacterForm" class="form-section hidden">
+                <h2>Editar Personagem</h2>
+                <input type="hidden" id="editCharacterId">
+
+                <label for="editPlayerName">Seu nome:</label>
+                <input type="text" id="editPlayerName" required>
+
+                <label for="editPlayerAge">Sua idade:</label>
+                <input type="number" id="editPlayerAge" required>
+
+                <label for="editPlayerTime">Horário disponível para jogar:</label>
+                <input type="text" id="editPlayerTime" required>
+
+                <label for="editCharacterName">Nome do Personagem:</label>
+                <input type="text" id="editCharacterName" required>
+
+                <label for="editCharacterAge">Idade do Personagem:</label>
+                <input type="number" id="editCharacterAge" required>
+
+                <label for="editCharacterRace">Raça:</label>
+                <input type="text" id="editCharacterRace" required>
+
+                <label for="editCharacterAppearanceName">Nome da aparência:</label>
+                <input type="text" id="editCharacterAppearanceName" required>
+
+                <label for="editCharacterArtworkOrigin">Obra de onde a aparência foi tirada:</label>
+                <input type="text" id="editCharacterArtworkOrigin" required>
+
+                <label for="editCharacterWeapon">Arma:</label>
+                <input type="text" id="editCharacterWeapon" required>
+
+                <label for="editCharacterItem">Item Adicional:</label>
+                <input type="text" id="editCharacterItem" required>
+
+                <label for="editCharacterHistory">História:</label>
+                <textarea id="editCharacterHistory" required></textarea>
+
+                <label for="editCharacterImage">Atualizar Imagem da Aparência:</label>
+                <input type="file" id="editCharacterImage" accept="image/*">
+
+                <button type="submit" class="button">Salvar Edição</button>
+                <button type="button" class="button" style="background-color: #3f72af;" onclick="toggleEditMode(false)">Cancelar Edição</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadCharacters);
+
+        const characterForm = document.getElementById('characterForm');
+        const characterListDiv = document.getElementById('characterList');
+        const characterDetailModal = document.getElementById('characterDetailModal');
+        const characterDetailContent = document.getElementById('characterDetailContent');
+        const editCharacterForm = document.getElementById('editCharacterForm');
+
+        let characters = [];
+
+        // Função para gerar um ID único
+        function generateUniqueId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Carregar personagens do localStorage
+        function loadCharacters() {
+            const storedCharacters = localStorage.getItem('characters');
+            if (storedCharacters) {
+                characters = JSON.parse(storedCharacters);
+                // Garante que os arrays de poderes, pets e itens existam
+                characters = characters.map(char => ({
+                    ...char,
+                    powers: char.powers || [],
+                    pets: char.pets || [],
+                    items: char.items || []
+                }));
+                renderCharacters();
+            }
+        }
+
+        // Salvar personagens no localStorage
+        function saveCharacters() {
+            localStorage.setItem('characters', JSON.stringify(characters));
+        }
+
+        // Renderizar a lista de personagens
+        function renderCharacters() {
+            characterListDiv.innerHTML = '';
+            if (characters.length === 0) {
+                characterListDiv.innerHTML = '<p style="text-align: center; color: #a0a0a0;">Nenhum personagem criado ainda. Crie um acima!</p>';
+                return;
+            }
+            characters.forEach(character => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.innerHTML = `
+                    <h3>${character.characterName}</h3>
+                    <p><strong>Player:</strong> ${character.playerName}</p>
+                    <p><strong>Raça:</strong> ${character.characterRace}</p>
+                    <p><strong>Idade:</strong> ${character.characterAge}</p>
+                    ${character.characterImage ? `<img src="${character.characterImage}" alt="Aparência de ${character.characterName}" class="character-image" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px; margin-top: 10px;">` : ''}
+                    <div class="card-buttons">
+                        <button class="button" style="background-color: #3f72af;" onclick="openDetailModal('${character.id}')">Ver Detalhes</button>
+                        <button class="button" style="background-color: #e94560;" onclick="deleteCharacter('${character.id}')">Excluir</button>
+                    </div>
+                `;
+                characterListDiv.appendChild(card);
+            });
+        }
+
+        // Abrir modal de detalhes/edição
+        function openDetailModal(id) {
+            const character = characters.find(char => char.id === id);
+            if (!character) return;
+
+            // Preencher o conteúdo de visualização
+            characterDetailContent.innerHTML = `
+                <h2>${character.characterName}</h2>
+                <div class="character-image-container">
+                    ${character.characterImage ? `<img src="${character.characterImage}" alt="Aparência de ${character.characterName}" class="character-image">` : '<p>Nenhuma imagem disponível.</p>'}
+                </div>
+                <div class="detail-group">
+                    <h3>Dados do Player</h3>
+                    <p><span class="detail-label">Seu nome:</span> ${character.playerName}</p>
+                    <p><span class="detail-label">Sua idade:</span> ${character.playerAge}</p>
+                    <p><span class="detail-label">Horário disponível:</span> ${character.playerTime}</p>
+                </div>
+                <div class="detail-group">
+                    <h3>Dados do Personagem</h3>
+                    <p><span class="detail-label">Nome:</span> ${character.characterName}</p>
+                    <p><span class="detail-label">Idade:</span> ${character.characterAge}</p>
+                    <p><span class="detail-label">Raça:</span> ${character.characterRace}</p>
+                    <p><span class="detail-label">Nome da aparência:</span> ${character.characterAppearanceName}</p>
+                    <p><span class="detail-label">Obra da aparência:</span> ${character.characterArtworkOrigin}</p>
+                    <p><span class="detail-label">Arma:</span> ${character.characterWeapon}</p>
+                    <p><span class="detail-label">Item Adicional:</span> ${character.characterItem}</p>
+                    <p><span class="detail-label">História:</span> ${character.characterHistory}</p>
+                </div>
+
+                <div class="detail-group">
+                    <h3>Poderes</h3>
+                    <div id="powersList" class="item-list"></div>
+                    <div class="add-item-group">
+                        <h4>Adicionar Novo Poder</h4>
+                        <input type="text" id="newPowerName" placeholder="Nome do Poder">
+                        <textarea id="newPowerEffect" placeholder="Efeito do Poder"></textarea>
+                        <button class="button" onclick="addPower('${character.id}')">Adicionar Poder</button>
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <h3>Pets</h3>
+                    <div id
